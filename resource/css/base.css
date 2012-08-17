@@ -1,0 +1,32 @@
+body {
+	font-size: 75%;
+}
+
+table {
+	font-size: 1em;
+}
+
+input.ui-button {
+	font-size: 1em;
+}
+
+pre, code {
+	font-size: 1em;
+}
+
+/* Site
+   -------------------------------- */
+
+body {
+	font-family: "Helvetica", "Arial",  "Verdana", "sans-serif";
+	background-color: #eeeef0;
+	color: #000000;
+}
+
+pre, code {
+	font-family: "Tahoma", "Helvetica", "Arial",  "Verdana", "sans-serif";
+}
+
+.ui-icon {
+display: inline-block !important;
+}

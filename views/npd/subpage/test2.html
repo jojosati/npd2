@@ -1,0 +1,13 @@
+%if not _vars.get('layout_loaded'): globals()['_rebase']=('helper/layout-dynamic',{'_vars':_vars})
+%include helper/language _vars=_vars
+%include helper/user-login _vars=_vars
+%_require_vars=['suburl','_m','_msg','urlpagetag']
+%[locals().update({k:_vars[k]}) for k in _require_vars]
+%if urlpagetag : urlpagetag = '/'+urlpagetag
+
+<div id='container1'></div>
+<div id='container2'></div>
+<script type="text/javascript">
+$('#container1').load('/{{suburl}}/~subpage/taking');
+$('#container2').load('/{{suburl}}/~subpage/keeping');
+</script>

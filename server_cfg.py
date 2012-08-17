@@ -1,0 +1,9 @@
+#suburl ='npd'
+#port = 8080
+debug = True
+sql_echo = False
+subpage_ajax = False
+theme = 'absolution'
+startup_model = 'assets'
+sql_dbfile = 'npd2.sqlite.db'
+server_type = 'twisted'

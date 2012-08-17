@@ -1,0 +1,162 @@
+%if not _vars.get('layout_loaded'): globals()['_rebase']=('helper/layout-dynamic',{'_vars':_vars})
+%include helper/language _vars=_vars
+%include helper/user-login _vars=_vars
+%_require_vars=['suburl','_m','_msg','urlpagetag']
+%[locals().update({k:_vars[k]}) for k in _require_vars]
+%if urlpagetag : urlpagetag = '/'+urlpagetag
+%pagetitle = _m("Naliga\\'D")
+
+<div id="slideshow"></div>
+<div id="mainmenu"></div>
+<div id="emptybox"></div>
+
+%overlay = 'fancybox'
+%if overlay=='colorbox' :
+<link type="text/css" href="/{{suburl}}/resource/css/colorbox.css" rel="Stylesheet">
+<script type="text/javascript" src="/{{suburl}}/resource/js/jquery.colorbox-min.js"></script>
+%end
+%if overlay=='fancybox' :
+<script type="text/javascript" src="/{{suburl}}/resource/js/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
+<link rel="stylesheet" href="/{{suburl}}/resource/js/fancybox/jquery.fancybox-1.3.4.css" type="text/css" media="screen" />
+%end
+<script type="text/javascript" src="/{{suburl}}/resource/js/jquery.cycle.lite.js"></script>
+<script type="text/javascript">
+var pages=[
+%if _vars.get('logged_in') :
+%if _vars.get('user_role') in ['editor','manager','developer'] :
+	'/{{suburl}}/subpage/action-tabs|{{_m("data entry//th:บันทึก/แก้ไขข้อมูล")}}',
+%end	
+	'/{{suburl}}/subpage/grid-tabs|{{_m("grid views//th:ดูตารางข้อมูล")}}'
+	,''
+	,'/{{suburl}}/subpage/samples/|{{_m("samples page//th:ตัวอย่าง")}}'
+%end
+	];
+$(document).ready(function() {
+
+	$('#pageheader,#pagefooter').hide();
+	$('.frame-dynamic').first().css('width','100%');
+	var $menuframe = $('<table>')
+	.append($('<tr>')
+		.append($('<td>',{'class':'ui-widget-header'})
+			.append($('<span>',{style:'letter-spacing:0.5em;font-size:200%'}).html('{{pagetitle}}'))
+			.append($('<span>',{style:'font-size:70%;margin-right:0.5em;vertical-align:top;'}).html('{{_vars["_server_"].get("version")}}'))
+			.append(login_tag().css('font-size','80%'))));
+	var $menu = $('<div>',{style:"margin-left:4em;margin-right:1em;"});
+
+	for (var i in pages){
+		var url = pages[i].split('|',2).shift();
+		var lbl = pages[i].split('|',2)[1] || url ;
+		var $link = (url!='')? 
+			$('<a>',{style:"width:100%;",href:url,html:lbl,title:lbl})
+			.button()
+%if overlay=='colorbox' :
+			.colorbox({
+				opacity: 0.6
+				,transition: 'fade'
+				,width:"98%"
+				,height:"98%"
+				//,fastIframe:false
+				,iframe:true
+				,escKey: false
+				,overlayClose: false
+				,onOpen: function(){
+					$('#cboxContent').addClass('gridwrapperframe');
+					$('#cboxOverlay,#cboxWrapper,#colorbox').css('z-index',10);
+					}
+			})
+%end
+%if overlay=='fancybox' :
+			.fancybox({
+				type: 'iframe'
+				,width:"98%"
+				,height:"98%"
+				,hideOnContentClick: false
+				,hideOnOverlayClick: false
+				,enableEscapeButton: false
+				,titlePosition: 'over'
+				,margin:15
+				,padding:8
+				,onClosed:function(){window.location.reload();}
+			})
+%end			
+			: '<hr>';
+		$('<div>').append($link).appendTo($menu);
+	}
+	$('.ui-button-text-only,.ui-button-text',$menu)
+	.css({
+		'line-height':'120%',
+		padding:'0.3em',
+		opacity:0.9
+		})
+	;
+	$menu.hide();
+	var timeoutHnd ;	// solve sensitive mouseenter/mouseleave problem in ie
+	
+	$menuframe
+	.css('opacity', 0.6)
+	.append($('<tr>').append($('<td>').append($menu)))
+	.mouseenter(function(){
+		if(timeoutHnd) clearTimeout(timeoutHnd) ;
+		if ($(this).css('opacity')){
+			$(this).css('opacity',''); 
+			$menu.show();
+			}
+		})
+	.mouseleave(function(){
+		var elem = this ;
+		function hideit() {
+			$(elem).css('opacity',0.6);
+			$menu.hide({effect:'slide'});
+		}
+		if(timeoutHnd) clearTimeout(timeoutHnd) ;
+		timeoutHnd = setTimeout(hideit,1000);
+		})
+	;
+	$.getJSON('/{{suburl}}/ajax/media/wallpapers/*.jpg', function(pics) {
+		if (pics.length) {
+			var dsp='block';
+			for (var i in pics) {
+				$('<img>',{src:'/{{suburl}}/media/'+pics[i],style:'width:100px;padding:0.5em;','class':'ui-widget-content'})
+				.css('display',dsp)
+				.appendTo('#slideshow');
+				dsp = 'none';
+			}
+			if (pics.length>1) {
+				$('#slideshow')
+				.cycle({
+					fit:true,
+					width:'99%',
+					height:'99%',
+					slideResize: 0
+					});
+				}
+			
+			$('#slideshow')
+			.css({
+				position:'fixed',
+				left:0,
+				top:0,
+				'z-index':-2
+				});
+			$(window)
+			.resize(function(){
+				$('#slideshow')
+				.width($(this).width())
+				.height($(this).height());
+				$('#emptybox')
+				.width($(this).width()*0.7)
+				.height($(this).height()-100);
+				})
+			.resize()
+			;
+
+		} else $('#slideshow').hide();
+	});
+	$('#mainmenu')
+	.append($menuframe)
+	.css('position','absolute')
+	.css('z-index',5)
+	.position({of:'#slideshow',my:'left top',at:'left top',offset:'0 0'});
+});
+
+</script>

@@ -1,0 +1,19 @@
+/* Grid
+----------------------------------*/
+.ui-grid { padding: .2em;  background-image: none; }
+.ui-grid .ui-grid-content { width: 100%; border-collapse: collapse; }
+.ui-grid table tbody td, .ui-grid .ui-grid-header, .ui-grid table thead a { padding: .4em;  }
+.ui-grid table tbody td {  font-weight: normal;  }
+.ui-grid-num td { text-align: right; }
+.ui-grid-str td { text-align: left; }
+.ui-grid-date td { text-align: center; }
+.ui-grid-docno td { text-align: center; font-weight: bold;}
+
+.ui-grid .ui-grid-header, .ui-grid .ui-grid-footer { padding: .4em .2em; text-align: center; }
+.ui-grid .ui-grid-footer { background-image: none; font-weight: normal; text-align: left; }
+.ui-grid table thead a { display: block;  }
+.ui-grid .ui-icon { float: right; }
+.ui-grid .ui-grid-paging { float: right; }
+.ui-grid .ui-grid-paging-prev { float: left; width: 16px; height: 16px; }
+.ui-grid .ui-grid-paging-next { float: right; width: 16px; height: 16px; }
+.ui-grid .ui-grid-results {  }

@@ -1,0 +1,11 @@
+NPD project
+by sathit jittanupat
+
+server :
+python 2.7
+sqlalchemy / sqlite
+bottle
+
+client :
+jquery / jquery ui
+jqgrid

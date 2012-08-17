@@ -1,0 +1,82 @@
+%if not _vars.get('layout_loaded'): globals()['_rebase']=('helper/layout-dynamic',{'_vars':_vars})
+%include helper/language _vars=_vars
+%include helper/user-login _vars=_vars
+%_require_vars=['suburl','_m','_msg']
+%[locals().update({k:_vars[k]}) for k in _require_vars]
+
+<div id="container">
+	<div id="title" class="ui-widget-header">demo1</div>
+	<div id="gallery"></div> 
+</div>
+
+<script src="jquery.animate-enhanced.min.js" type="text/javascript" charset="utf-8"></script> 
+<!-- this library smooths some animations by replacing jQ ones with css3 --> 
+<script src="modernizr.custom.08371.js" type="text/javascript" charset="utf-8"></script> 
+ 
+<script type="text/javascript" charset="utf-8"> 
+function laydown_photo (picname,count,left,bottom,degree) {
+	var zoom = 150;
+	var offsetLeft = left; //Math.floor(Math.random() * 450);
+	var offsetBottom = bottom; //Math.floor(Math.random() * 30);
+	setTimeout(function() {
+		var $photo = $('<img>',{src:'/{{suburl}}/media/'+picname,style:'width:250px;height:250px;padding:0.5em;','class':'ui-widget-content'})
+		.css({
+			"margin" : 0,
+			"opacity" : 0.0,
+			"position": "absolute",
+			"left" : offsetLeft  + "px",
+			//"bottom" : offsetBottom + "px",
+			})
+		.appendTo('#gallery')
+		;
+
+		if (Modernizr.csstransforms) {
+		   var degrees = degree; //Math.floor(Math.random() * 40) -20;
+		   var rotations = "rotate(" + degrees + "deg)";
+		   $photo.css({
+			   "transform" : rotations,
+			   "-moz-transform" : rotations,
+			   "-ms-transform" : rotations,
+			   "-o-transform" : rotations,
+			   "-webkit-transform" : rotations
+			});
+		}
+
+		$photo
+		.css({height : 250+zoom+'px',width : 250+zoom+'px'})
+		.animate({
+			   height: "-=" + zoom + "px",
+			   width: "-=" + zoom + "px",
+			   opacity: 1.0,
+			   leaveTransforms: true
+		   }, 4000)
+	    ;
+		//$photo.css('opacity',1);
+	}, (count*5000));
+}
+$(document).ready(function() {
+	login_tag('<div>').css('float','right').appendTo($('#title','#container'));
+
+	$('#container')
+	.addClass('ui-widget-content')
+	;
+	$('#gallery')
+	.addClass('ui-widget-content')
+	.css({
+		width:'570px',
+	    height: '300px',
+	    margin: '50px 20px 50px 20px',		
+		});
+	$.getJSON('/{{suburl}}/ajax/media/wallpapers/*', function(pics) {
+		for (var i in pics) {
+			laydown_photo(pics[i],i,
+				Math.floor(Math.random() * 450),
+				Math.floor(Math.random() * 30),
+				Math.floor(Math.random() * 40) -20
+				);
+		}
+	});
+});
+
+</script> 
+
