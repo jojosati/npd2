@@ -401,8 +401,10 @@ def csv_jqgrid_grid (suburl) :
     output = StringIO.StringIO()
     re_csv_needquote = re.compile(r'([",]|^\s|\s$|[\n\r\f\v]|^-?[0-9]*(?:[.][0-9]*)?$)')
     rno = 0
+    print 'csv',args
     for row in model.jqgrid_grid_generator ('csv',**args):
         rno += 1
+        print rno,row
         for i in range(len(row)) :
             c = row[i]
             if rno==1 and args.get('_lang'):
@@ -477,6 +479,7 @@ def mainpage (suburl,subpage=None) :
                 fname = os.path.join(spath,subpage)
                 if os.path.isfile(fname):
                     return bottle.static_file(subpage,root = spath)
+
 
     if subpage and subpage[0]=='/' : subpage = '/' + subpage
     redir_url = '/'+suburl+'/'+(subpage if subpage else 'index')

@@ -25,7 +25,6 @@ var pages=[
 %if _vars.get('logged_in') :
 %if _vars.get('user_role') in ['editor','manager','developer'] :
 	'/{{suburl}}/subpage/action-tabs|{{_m("data entry//th:บันทึก/แก้ไขข้อมูล")}}',
-	'/{{suburl}}/subpage/taker_report|{{_m("Report Taker//th:รายงานการยืมสินค้า")}}',
 %end	
 	'/{{suburl}}/subpage/grid-tabs|{{_m("grid views//th:ดูตารางข้อมูล")}}'
 	,''

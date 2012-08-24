@@ -24,7 +24,7 @@ import aliases_default
 import regex_default
 import summaries_default
 
-__version__ = '1.8.0'
+__version__ = '1.8.1'
 _restrict_cfg =  {
     'server' : {
         'version': __version__,
@@ -1215,14 +1215,17 @@ class Npd1View (object) :
         if npage<1 :
             npage = 1
 
-        if limit<0 :
-            limit = 1
+        #if limit<0 :
+        #    limit = 1
 
         total_pages = 0
         if count > 0 :
-            total_pages = int(count/limit)
-            if count > total_pages*limit :
-                total_pages += 1
+            if limit > 0 :
+                total_pages = int(count/limit)
+                if count > total_pages*limit :
+                    total_pages += 1
+            else :
+                total_pages = 1
 
         if page<1 :
             page = 1
@@ -1230,15 +1233,16 @@ class Npd1View (object) :
         if page > total_pages :
             page = total_pages
 
-        offset = 0
-        if page :
-            offset = (page-1) * limit
+        if limit > 0 :
+            offset = 0
+            if page :
+                offset = (page-1) * limit
 
-        if limit :
-            qry = qry.limit(limit * npage)
+            if limit>0 :
+                qry = qry.limit(limit * npage)
 
-        if offset :
-            qry = qry.offset(offset)
+            if offset :
+                qry = qry.offset(offset)
 
         # yeild header
         if outtype=='csv' :

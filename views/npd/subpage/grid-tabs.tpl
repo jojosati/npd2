@@ -14,6 +14,8 @@ var pages=[
 	,'/{{suburl}}/~subpage/sellable/=_able-gqv{{!urlpagetag}}|{{_m("sellable//th:พร้อมขาย")}}'
 	,'/{{suburl}}/~subpage/taken/=_able-gqv{{!urlpagetag}}|{{_m("taken//th:ถูกยืม")}}'
 	,'/{{suburl}}/~subpage/sold/=_able-gqv{{!urlpagetag}}|{{_m("sold//th:ขายไปแล้ว")}}'
+	,'/{{suburl}}/~subpage/taker_report|{{_m("taker_report//th:ประวัติยืม")}}'
+
 	];
 $(document).ready(function() {
 	$tabnav = $('<ul>') ;
