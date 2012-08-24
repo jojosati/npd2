@@ -256,7 +256,8 @@ class Npd1View (object) :
         fname = './models/'+self.name+'/model_cfg.py'
         try: mtime = os.path.getmtime(fname)
         except Exception as e:
-            if _restrict_cfg.get('debug'): print fname,type(e).__name__,e.message
+            if _restrict_cfg.get('debug'):
+                print fname,type(e).__name__,e.message
             return
 
         if not hasattr(self,'_cache_ctrl') :
@@ -268,7 +269,8 @@ class Npd1View (object) :
             execfile(fname,{},xname)
             self._cache_ctrl[fname] = mtime
         except Exception as e :
-            if _restrict_cfg.get('debug'): print fname,type(e).__name__,e.message
+            if _restrict_cfg.get('debug'):
+                print fname,type(e).__name__,e.message
             return
 
         for k in xname :
@@ -293,7 +295,8 @@ class Npd1View (object) :
             mtime = None
             try: mtime = os.path.getmtime(fname)
             except Exception as e:
-                if _restrict_cfg.get('debug'): print fname,type(e).__name__,e.message
+                if _restrict_cfg.get('debug'):
+                    print fname,type(e).__name__,e.message
                 pass
 
             md5 = hashlib.md5(str(_cfg[entry])).digest()
@@ -1759,12 +1762,12 @@ def xxx():
 
     for k,v in npd1.jqgrid_grid(**args).iteritems():
         if k=='rows' :
-            print k,'='
+            #print k,'='
             for r in v :
                 for x in r['cell'] :
                     print '  ',x,
                 print ''
             continue
-        print k,'=',v
+        #print k,'=',v
 
 
