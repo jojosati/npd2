@@ -76,7 +76,12 @@ jqgridwrapper = function(options) {
 		this.isReady= function(){return true;};
 		this.scheduleReload = scheduleReload;
 	}
-	
+	//.append('<script type="text/javascript" src="/{{suburl}}/resource/js/json2.js"></script>')
+	/*if (typeof $.autoNumeric=='undefined' && options.suburl) {
+		var src = '/'+options.suburl+'/resource/js/autoNumeric-1.7.5.js' ;
+		//$head.append('<script type="text/javascript" src="/{{suburl}}/resource/js/autoNumeric-1.7.5.js"></script>') ;
+		$('head').append('<script type="text/javascript" src="'+src+'"></script>') ;
+	}*/
 	// --------------------------------
 	// service function select best message depend on language
 	function _(m,lang,ms){
@@ -1002,7 +1007,7 @@ jqgridwrapper = function(options) {
 						+ ' - entry form - ' 
 						+ $('.ui-jqdialog-title',$('#editmod'+$grid.attr('id'))).text();
 				$('.unload_warning',$grids).html(m) ;
-			}
+				}
 			$("div.ui-jqconfirm",form.parent()).each(
 				function(){
 					$(this).css('top','10px');
@@ -1061,9 +1066,12 @@ jqgridwrapper = function(options) {
 
 	function _formResize (form) {
 		var o = $grid.parents('.gridwrapperframe').first();
-		if (!$(o).hasClass('gridwrapperframe')) o = window;
-		var h = $(o).height() - form.offset().top - 80 ;
-		if (form.height() > h) form.height(h);
+		//if (!o)
+		//	o = $grid.parents('.frame-dynamic').first()
+		//if (!o) o = window; //if (!$(o).hasClass('gridwrapperframe')) o = window;
+		if (!o.length) o = $grids ;
+		var h = $(o).height() * 0.8 ; //$(form).offset().top ;
+		if ($(form).height() > h) $(form).height(h); 
 		_scrollPane(form,true) ;
 	}
 	
@@ -1143,7 +1151,7 @@ jqgridwrapper = function(options) {
 				,afterSubmit: function(response, postdata) { return $.parseJSON(response.responseText);}
 				,beforeShowForm : _formColspan(frmtype)
 				,afterShowForm : _formResize
-				,onClose : function(){$('.unload_warning',$grids).html('') ;}
+				,onClose : function(){$('.unload_warning',$grids).html('') ; }
 				,mtype:'GET'
 			};
 		case 'del':
@@ -1426,7 +1434,6 @@ jqgridwrapper = function(options) {
 			if (container) $grids.attr('id',container.replace(/^#/,''));
 		}
 		$grids.append('<div class="unload_warning" style="display:none;" />');
-		
 		if (gridid) $grid = $(gridid);
 		if (!$grid) {
 			$grid = $('<table>') ;

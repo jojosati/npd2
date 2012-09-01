@@ -23,7 +23,7 @@
 </div>
 <script type="text/javascript">
 function selling() {
-	var frame = $('.gridwrapperframe').first() ;
+	//var frame = $('.gridwrapperframe').first() ;
 	var destwidth = 490;
 	var srcoptions = {{!_vars['gridwrapper_options'](_vars)}};
 	srcoptions.pageoptions.unshift('@f-taker-');
@@ -255,7 +255,7 @@ function selling() {
 	// ---------------------------------
 	$('#selling-instk-body').hide();
 	$('<div>',{style:'text-align:right;margin-bottom:1em;width:100%;','class':'ui-widget-header ui-corner-all'})
-	.append($('<span>',{style:'float:left',html:'{{_m("selling_entry")}}'}))
+	.append($('<span>',{style:'float:left',html:'{{_m("selling_entry")}}',class:'unload_warning'}))
 	.append(login_tag())
 	.append($('<span>',{title:'{{_m("toggle_sellable_list")}}'})
 		.button({text: false,icons: {primary:'ui-icon-transferthick-e-w'}})

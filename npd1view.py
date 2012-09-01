@@ -24,7 +24,7 @@ import aliases_default
 import regex_default
 import summaries_default
 
-__version__ = '1.8.1'
+__version__ = '1.8.3'
 _restrict_cfg =  {
     'server' : {
         'version': __version__,

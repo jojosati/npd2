@@ -64,9 +64,11 @@ user_login = function (options){
 				}
 			else return true;
 			});
-		$frm.dialog({
+		//$('<div>').append($frm)
+		$frm
+		.dialog({
 			zIndex: 2000,
-			close : function () {	$(this).dialog( "destroy" ).remove();},
+			close : function () { $(this).dialog( "destroy" ).remove();},
 			modal:true,
 			buttons:[
 					{

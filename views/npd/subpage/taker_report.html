@@ -20,6 +20,11 @@
 <h2 id="taken_history"></h2>
 <div id="result_taken_history"></div>
 
+<script type="text/javascript">
+$(document).ready(function() {
+	$('head').append('<link href="/{{_vars["suburl"]}}/resource/pao/style.css" rel="Stylesheet" type="text/css" media="screen, projection" />');
+});
+</script>
 
 <script type="text/javascript">
 $('form#form1').before($('<div>').css('margin-bottom','8pt').append(login_tag()));
@@ -242,14 +247,22 @@ $(document).ready(function(){
 			
 			$("#chk_has_taken").removeAttr("disabled");
 			$("#select_category").append('<option>Now Loading ...</option>');
-			$.getJSON('/npd/ajax/taxonomy/acat',function(data){
-				$("#select_category").removeAttr("disabled");
-				$("#select_category").empty();
-				$.each(data, function(key, val) {
-					$("#select_category").append('<option value="'+ val +'">'+ val +'</option>');
+			
+			function getlist () {
+				$.getJSON('/npd/ajax/taxonomy/acat',function(data) {
+					$("#select_category").removeAttr("disabled");
+					$("#select_category").empty();
+					$.each(data, function(key, val) {
+						$("#select_category").append('<option value="'+ val +'">'+ val +'</option>');
+						if (val.search(/^(\|\|...waiting)/) == 0) {		//ถ้าขึ้นต้นด้วย ||...waiting เป็นจริง จะ return 0
+							getlist(); // <---- recursive
+							return ;
+						}
+					});
+					$("#select_category").append('<option value="all">-- แสดงสินค้าทุกชนิด --</option>');
 				});
-				$("#select_category").append('<option value="all">-- แสดงสินค้าทุกชนิด --</option>');
-			});
+			}
+			getlist();
 		}
 	});
 	

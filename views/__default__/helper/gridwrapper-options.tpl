@@ -8,19 +8,21 @@
 %language=_vars['language'] or 'en'
 %if _vars.get('layout_loaded') != '~' :
 <script type='text/javascript'>
-//$('head')
-//.append('<link type="text/css" href="/{{suburl}}/resource/css/ui.jqgrid.css" rel="Stylesheet">')
+$(document).ready(function() {
+	$('head')
+	.append('<link type="text/css" href="/{{suburl}}/resource/css/ui.jqgrid.css" rel="Stylesheet">')
 //.append($('<script>',{type:"text/javascript",src:"/{{suburl}}/resource/js/i18n/grid.locale-{{language}}.js"}))
 //.append($('<script>',{type:"text/javascript",src:"/{{suburl}}/resource/js/jquery.jqGrid.min.js"}))
 //.append($('<script>',{type:"text/javascript",src:"/{{suburl}}/resource/js/jqGridWrapper.js"}))
 //.append($('<script>',{type:"text/javascript",src:"/{{suburl}}/resource/js/jquery.printElement.js"}))
-//;
+	;
+});
 </script>
-<link type="text/css" href="/{{suburl}}/resource/css/ui.jqgrid.css" rel="Stylesheet">
 <script type="text/javascript" src="/{{suburl}}/resource/js/i18n/grid.locale-{{language}}.js"></script>
 <script type="text/javascript" src="/{{suburl}}/resource/js/jquery.jqGrid.min.js"></script>
 <script type="text/javascript" src="/{{suburl}}/resource/js/jqGridWrapper.js"></script>
 <script type="text/javascript" src="/{{suburl}}/resource/js/jquery.printElement.js"></script>
+<script type="text/javascript" src="/{{suburl}}/resource/js/autoNumeric-1.7.5.js"></script>
 %end
 %def gridwrapper_options(vars):
 %def jsval(val) :
@@ -56,7 +58,8 @@
 %	val = vars.get('kwoptions',{}).get(kw,pgdefault if (pgdefault is not None and kw in vars['pageoptions']) else vars.get('grid_'+kw,default))
 %	return formatter(val or ifempty)
 %end
-%gopt = {'_able':['*'],'vscroll':['',1],'addnew':[False,True]}
+%#gopt = {'_able':['*'],'vscroll':['',1],'addnew':[False,True]}
+%gopt = {'_able':['*'],'addnew':[False,True]}
 %gopt.update({'colreorder':[False,True],'scroll':[None,1],'showcols':[],'form_colnum':[None,None,2]})
 %gopt.update({'rownum':[None,None,20],'rownumlist':[None,None,'10-20-50-100',listformatter]})
 %gopt.update({'autofit':[None,None,'',listformatter],'height':[],'width':[],'resizable':[False,True],'minwidth':[None,None,350]})

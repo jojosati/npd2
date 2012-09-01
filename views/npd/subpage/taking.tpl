@@ -23,7 +23,7 @@
 </div>
 <script type="text/javascript">
 function taking() {
-	var frame = $('.gridwrapperframe').first() ;
+	//var frame = $('.gridwrapperframe').first() ;
 	var destwidth = 490;
 	var srcoptions = {{!_vars['gridwrapper_options'](_vars)}};
 	srcoptions.pageoptions.unshift('@f-taker-');

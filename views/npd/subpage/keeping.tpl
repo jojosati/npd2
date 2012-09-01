@@ -256,7 +256,7 @@ function taking() {
 	//--------------------------------
 	$('#keeping-instk-body').hide();
 	$('<div>',{style:'text-align:right;margin-bottom:1em;width:100%;','class':'ui-widget-header ui-corner-all'})
-	.append($('<span>',{style:'float:left',html:'{{_m("keeping_entry")}}'}))
+	.append($('<span>',{style:'float:left',html:'{{_m("keeping_entry")}}',class:'unload_warning'}))
 	.append(login_tag())
 	.append($('<span>',{title:'{{_m("toggle_takable_list")}}'})
 		.button({text: false,icons: {primary:'ui-icon-transferthick-e-w'}})

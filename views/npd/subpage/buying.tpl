@@ -19,7 +19,7 @@
 </div>
 <script type="text/javascript">
 function buying(){{''}}{
-	var frame = $('.gridwrapperframe').first() ;
+	//var frame = $('.gridwrapperframe').first() ;
 	var destwidth = 490;
 	var srcoptions = {{!_vars['gridwrapper_options'](_vars)}};
 	var destoptions = {
@@ -278,6 +278,7 @@ function buying(){{''}}{
 					],true,'5em')).css('width','95%').appendTo('#buying-head');
 			var $summary = $('<span>').css({'margin-left':'0.5em'});
 			var lastowner = '';
+			var $container = $('#buying-container');
 			//$('[name="buy_date"]',$table).val($.datepicker.strftime('%d/%m/%Y'));
 			$('[name="owner"]',$table)
 				.blur(function(){if(lastowner!=$(this).val()){lastowner=$(this).val();$summary.html('');soldSummary($summary,$(this).val());}})
@@ -330,8 +331,9 @@ function buying(){{''}}{
 				.button()
 				.click(function(){clearBuying($table);})
 				)
-			.appendTo("#buying-container");
-			$('tr.footrow','#buying-container').addClass('ui-state-default');
+			.appendTo($container);
+			$('tr.footrow',$container).addClass('ui-state-default');
+			$container.addClass('gridwrapperframe') ;
 		}
 	});
 }
