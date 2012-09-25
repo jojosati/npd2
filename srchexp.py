@@ -65,7 +65,7 @@ class NowObj(object) :
         "$boy" : "$now(1,1)",
         }
     re_nowvar = \
-        re.compile(r'((?:\$(?:now(?:\.\w+)*|period))\s*(?:\([^)]*\))*(?:\.\w+)*)')
+        re.compile(r'((?:\$(?:now(?:\.\w+)*|period))\s*(?:\([^)]*\))*(?:\.\w+(?:\([^)]*\))*)*)')
 
     def __init__ (self,*args,**kwargs) :
         self.date = self.assign(datetime.date.today(),*args,**kwargs)
@@ -616,16 +616,24 @@ if __name__ == '__main__':
         "{1 or [2,3]}",
         "(1,2\,3)",
         "1...10",
-        "!1..20"
+        "!1..20",
+        "$today",
+        "$now(1,1).prd(0,0,+1.)",
+        "$thismonth",
         ]
     for s in exps:
         src = Search(s)
         print s,"=>",src,src.items
-    while True:
-        try:
-            s = raw_input('search:')
-        except: break
-        if not s : break
-        src = Search(s)
-        print s,"=>",src,src.items
+
+
+    _now = NowObj()
+    print _now(1).prd(0,1.)
+##    while True:
+##        try:
+##            s = raw_input('search:')
+##        except: break
+##        if not s : break
+##        src = Search(s)
+##        print s,"=>",src,src.items
+
 

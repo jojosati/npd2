@@ -18,6 +18,7 @@
 <span style="font-size:180%;letter-spacing:0.2em;margin-left:0.1em;">
 <span style="color:#FF0000;text-shadow:gray 3px 3px 2px;">Net</span><span style="color:#0000CC;text-shadow:gray 3px 3px 2px;">Scraft</span>
 </span>
+<span style="color:red;margin-right:8pt;text-shadow:gray 3px 3px 2px;"><sup>{{_vars['_server_'].get('version','')}}</sup></span>
 <span style="font-size:80%;font-weight:normal;"> your <b>scraft</b> is going to fly with you. </span>
 </div>
 <div id="pageheadnav" class="ui-widget ui-widget-content ui-corner-bottom">

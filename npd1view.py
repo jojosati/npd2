@@ -24,7 +24,7 @@ import aliases_default
 import regex_default
 import summaries_default
 
-__version__ = '1.8.3'
+__version__ = '1.9.0'
 _restrict_cfg =  {
     'server' : {
         'version': __version__,
@@ -1263,6 +1263,7 @@ class Npd1View (object) :
 
         # yeild rows
         rno = 0
+        #print qry
         for row in qry.all() :
             rno += 1
             id = row._id_

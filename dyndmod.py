@@ -176,12 +176,15 @@ def col_formatted_expr(col,name,type_,fmtcfg) :
                         (1+sqla.func.abs(col - sqla.cast(col,sqla.Integer)))*ddv,12)
                     ,'.',''),2)
             #q = sqla.func.round(col,fmt)
+        setattr(q,'_fmt',fmt)
+    if hasattr(col,'type') :
+        t = col.type
+    else :
+        t = col.property.columns[0].type
     if q is None :
-        if hasattr(col,'type') :
-            t = col.type
-        else :
-            t = col.property.columns[0].type
-        q = col if t == sqla.String else sqla.cast(col,sqla.String)
+        q = col if isinstance(t,sqla.String) else sqla.cast(col,sqla.String)
+    setattr(q,'_noncastcol',col)
+    setattr(q,'_typecast',type_)
     return q #sqla.func.ifnull(q,'')
 
 class __Flds(object) :
@@ -685,7 +688,7 @@ class _BaseComparator(sqla_hybrid.Comparator) :
             return col_formatted_expr(fld,self._fldname(),type_,cast)
         if not cast :
             return fld
-        if type_ not in (sqla.Integer,sqla.Float) :
+        if type_ not in (sqla.Integer,sqla.Float): #,sqla.Date) : #,sqla.DateTime,sqla.Time) :
             return fld
         col = fld.property.columns[0]
         if isinstance(col.type,type_) :
@@ -717,14 +720,14 @@ class _BaseComparator(sqla_hybrid.Comparator) :
     def query(self,*args,**kwargs) :
         type_ = kwargs.get('type_')
         mixfunc = kwargs.get('mixfunc')
-        cast = kwargs.get('cast',False)
+        #cast = kwargs.get('cast',False)
+        cast = kwargs.get('cast',True)
         if not mixfunc and args :
             mixfunc = args[0]
         if isinstance(mixfunc,basestring) :
             mixfunc = getattr(sqla.func,mixfunc)
         clauses = self._scope_clauses(**kwargs)
         clause = sqla.and_(*clauses)
-
         fld = self._cast(type_=type_,cast=cast)
         if callable(mixfunc) :
             fld = mixfunc(fld)
@@ -769,7 +772,8 @@ class _BaseComparator(sqla_hybrid.Comparator) :
     def operate(self, op, *other,**kwargs):
         # determine whether to use exist where
         type_ = kwargs.pop('type_',None)
-        cast = kwargs.pop('cast',False)
+        #cast = kwargs.pop('cast',False)
+        cast = kwargs.pop('cast',True)
         scargs = {}
         for x in ('mixclauses','idcol','version') :
             if x in kwargs :
@@ -1251,7 +1255,7 @@ class _FldBase(_VerAnyBase) :
 
             if cast \
                 and t != col.property.columns[0].type \
-                and t in (sqla.Integer,sqla.Float) :
+                and t in (sqla.Integer,sqla.Float,sqla.Date) :
                 col = sqla.cast(col,t)
         return col
 
@@ -1678,11 +1682,11 @@ class _MainBase(_AnyBase) :
                     t = mixclauses(base)
                 if t :
                     clauses.extend(t)
-            print 'verbase query =',base.select(
-                    nn, version, id,
-                    mixclauses=clauses, alias=base,
-                    decorfunc=_decor(base.parent_id,base.version,base,vcols),
-                    **kwargs)
+##            print 'verbase query =',base.select(
+##                    nn, version, id,
+##                    mixclauses=clauses, alias=base,
+##                    decorfunc=_decor(base.parent_id,base.version,base,vcols),
+##                    **kwargs)
             return base.select(
                     nn, version, id,
                     mixclauses=clauses, alias=base,
@@ -2606,6 +2610,7 @@ class Filter(Search):
         '<' : '__lt__',
         '<=' : '__le__',
         '==' : '__eq__',
+        '=' : '__eq__',
         }
 
     def query(self,*cols) :
@@ -2638,7 +2643,42 @@ class Filter(Search):
                     q_ = []
                     for c in cols :
                         fn = getattr(c,self.query_openranges[itm[0]])
-                        q_.append(fn(itm[1]))
+                        other = itm[1]
+                        t = getattr(c,'_typecast',None)
+                        cc = getattr(c,'_noncastcol',None)
+                        if t in (sqla.Date,sqla.DateTime,sqla.Time,sqla.Integer,sqla.Float) \
+                            and  cc is not None :
+
+                            tt = cc.type if hasattr(cc,'type') else \
+                                    cc.property.columns[0].type
+
+                            if t in (sqla.Date,sqla.DateTime,sqla.Time) :
+                                if not isinstance(tt,sqla.String) :
+                                    cc = sqla.cast(cc,sqla.String)
+                                fn = getattr(cc,self.query_openranges[itm[0]])
+
+                                fmt = getattr(c,'_fmt',None)
+                                if fmt :
+                                    try :
+                                        dt = datetime.datetime.strptime(itm[1],fmt)
+                                        if t == sqla.Date :
+                                            dt = dt.date()
+                                        if t == sqla.Time:
+                                            dt = dt.time()
+                                        other = dt.isoformat()
+                                    except :
+                                        fn = None # skip! incorrect compare value
+                            else :
+                                if not isinstance(tt,t) :
+                                    cc = sqla.cast(cc,t)
+                                fn = getattr(cc,self.query_openranges[itm[0]])
+                                try :
+                                    other = float(other)
+                                except :
+                                    fn = None # skip! incorrect compare value
+                            #print fn(other)
+                        if callable(fn) :
+                            q_.append(fn(other))
                     qs.append(sqla.or_(*q_))
                     continue
 
@@ -2822,21 +2862,33 @@ if __name__ == "__main__":
 
     class TestModel(_Model) :
         _staticflds_ = ["code:notnull,unique,index","category","title:notnull"]
-        _dynamicflds_ = ['weight','serial','cost:float','price:float','weight.value:float']
+        _dynamicflds_ = ['weight','serial','cost:float','price:float','weight.value:float','buydate:date']
         #_childflds_ = {'addresses': ['road','city','postcode']}
         #_calculatedflds_ = {'detail:float,deferred': lambda cls: cls.code+' '+cls.serial}
+        _formattercfg_ = {
+            sqla.Date: '%d/%m/%Y',
+            sqla.DateTime: '%d/%m/%Y %H:%M:%S',
+            sqla.Float: 2
+            }
 
-##    model = TestModel(user="sathit",debug=False,echo=True)
-##    model.create_all()
+    model = TestModel(user="sathit",debug=False,echo=True)
+    mainbase = model.mainbase
+
     flt = Filter('ส')
     print flt.match('สาธิต')
+    #print dir(mainbase._selcol('buydate'))
+    #print mainbase.buydate > '1/1/2012'
+    print flt.query(mainbase._selcol('buydate'))
+
 def zzz():
+    model = TestModel(user="sathit",debug=False,echo=True)
+    model.create_all()
     session = model.session
 
     mainbase = model.mainbase
     verbase = model.verbase
     fldbase = model.fldbase
-    childbase = model.childbase
+##    childbase = model.childbase
 
     #print mainbase.weight.search('')
     formatter = {
@@ -2848,15 +2900,17 @@ def zzz():
     print 'weight',type(mainbase._selcol('weight'))
     print 'ver_logged_time',type(mainbase._selcol('ver_logged_time'))
     print 'code',type(mainbase._selcol('code'))
-##    num = -5.2345
-##    qry = session.query(
-##                sqla.cast(sqla.cast(num,sqla.Integer),sqla.String) +
-##                '.' +
-##                sqla.func.substr(sqla.func.replace(
-##                    sqla.func.round((1+sqla.func.abs(num - sqla.cast(num,sqla.Integer)))*100,12)
-##                    ,'.',''),2)
-##            )
-##    print qry
+    print 'buydate',type(mainbase._selcol('buydate'))
+
+    num = -5.2345
+    qry = session.query(
+                sqla.cast(sqla.cast(num,sqla.Integer),sqla.String) +
+                '.' +
+                sqla.func.substr(sqla.func.replace(
+                    sqla.func.round((1+sqla.func.abs(num - sqla.cast(num,sqla.Integer)))*100,12)
+                    ,'.',''),2)
+            )
+    print qry
 ##    for row in qry.all() :
 ##        print row
 ##    print dir(sqla.Float)
