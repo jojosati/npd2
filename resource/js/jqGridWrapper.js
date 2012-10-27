@@ -311,12 +311,16 @@ jqgridwrapper = function(options) {
 	// --------------------------------
 	// service function show dialog with message
 	function alertDialog(msg,dialogoptions) {
-		var options = {dialogClass:'ui-state-focus',buttons:[{text:_('OK'),click:function(){$(this).dialog('close');}}]};
+		var options = {/*dialogClass:'ui-state-focus',*/buttons:[{text:_('OK'),click:function(){$(this).dialog('close');}}]};
 		var closefn ;
 		if (dialogoptions) {
 			closefn = dialogoptions.close ;
 			$.extend(options,dialogoptions);
+			if (dialogoptions.dialogClass) {
+				//options.create = function(){$('.')};
+			}
 		}
+		
 		options.close = function(){ if(closefn)closefn(); $(this).remove();};
 		$('<div>',{'html': msg}).dialog(options);
 	}

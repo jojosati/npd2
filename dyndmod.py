@@ -11,10 +11,11 @@
 #-------------------------------------------------------------------------------
 #!/usr/bin/env python
 
-import datetime, re, json
+import datetime, re, json, time
 import sqlalchemy as sqla
 from sqlalchemy.ext import declarative as sqla_declarative
 from sqlalchemy.ext import hybrid as sqla_hybrid
+from sqlalchemy.engine import reflection
 
 from srchexp import _SrchExp, Search, _unicode, _utf8, like2re
 
@@ -1319,6 +1320,7 @@ class _MainBase(_AnyBase) :
         if not hasattr(self,'_dfields') :
             self._dfields = _DynamicFlds(self)
         return self._dfields
+
     @dfields.comparator
     def dfields(cls,name='',*args,**kwargs) : # dynamic fields
         if hasattr(cls,name) :
@@ -1764,7 +1766,7 @@ class _Model(object) :
         self.debug= kwargs.get("debug",False)
         self.quiet= kwargs.get("quiet",False)
         self.echo_("debug: {0}",self.debug)
-        self.user_id = kwargs.get("user")
+        self.user_id = kwargs.get("user") or ''
         self.Session = kwargs.get("session") \
             or sqla.orm.scoped_session(sqla.orm.sessionmaker())
 
@@ -2111,7 +2113,7 @@ class _Model(object) :
 
     def flush_new(self,session,o):
         if not isinstance(o,self.mainbase): return
-        #if o._ver is None :
+
         vercol = self.named("_ver")
         usercol = self.named("versionfld","logged_user")
         ver = getattr(o,vercol)
@@ -2124,36 +2126,50 @@ class _Model(object) :
         if not isinstance(o,self.mainbase): return
         vercol = self.named("_ver")
         ivcol = self.named('versionfld','invalidity')
+        tmcol = self.named('versionfld','logged_time')
         if not getattr(o,ivcol) :
             session.expunge(o)
+            #suffix  = '{{del#{0}}}'.format(o.id)
+            for n in self.uniquecolumns :
+                v = getattr(o,n)
+                setattr(o,n,'{{{0}:{1}}}'.format(v,time.time()))
             setattr(o,ivcol,'{delete}')
+            setattr(o,tmcol,sqla.func.current_timestamp())
             session.add(o)
             sqla.orm.attributes.flag_modified(o,vercol)
             return
-        # saving all static field, before deleted main
-        parent_id = o.id
-        lastver = getattr(o,self.named("_last_version"))+1
-        for c in schema_columns(o) :
-            if c in ('id',) :
-                    continue
-            h = sqla.orm.attributes.get_history(o,c)
-            oldval = h.non_added()
-            if oldval :
-                newfo = self.fldbase(name=c,value=oldval[0],
-                        version=-1,parent_id=parent_id)
-                session.add(newfo)
-        # create versioned history
-        newver = self.verxbase(version=-1,parent_id=parent_id,
-                logged_user=getattr(session,'user_id',self.user_id))
-        vo =  getattr(o,vercol)
-        if vo :
-            for c in schema_columns(vo) :
-                if c in ('version', 'parent_id', 'logged_user', 'logged_time') :
-                    continue
-                h = sqla.orm.attributes.get_history(vo,c)
-                oldval = h.non_added()[0]
-                setattr(newver,c,oldval)
-        session.add(newver)
+
+        # due to problem if delete last inserted_primary_key
+        # when insert new data the main.id can't reuse (duplicate error during insert fld & ver data)
+        # becase parent_id in fld & ver table that reference to previous deleted last id
+        # still exist in database
+        # now, allow true hard-delete.
+
+##        # saving all static field, before deleted main
+##        parent_id = o.id
+##        lastver = getattr(o,self.named("_last_version"))+1
+##        for c in schema_columns(o) :
+##            if c in ('id',) :
+##                    continue
+##            h = sqla.orm.attributes.get_history(o,c)
+##            oldval = h.non_added()
+##            if oldval :
+##                newfo = self.fldbase(name=c,value=oldval[0],
+##                        version=-1,parent_id=parent_id)
+##                session.add(newfo)
+##        # create versioned history
+##        newver = self.verxbase(version=-1,parent_id=parent_id,
+##                logged_user=getattr(session,'user_id',self.user_id))
+##        vo =  getattr(o,vercol)
+##        if vo :
+##            for c in schema_columns(vo) :
+##                if c in ('version', 'parent_id', 'logged_user', 'logged_time') :
+##                    continue
+##                h = sqla.orm.attributes.get_history(vo,c)
+##                oldval = h.non_added()[0]
+##                setattr(newver,c,oldval)
+##        session.add(newver)
+
 
     def flush_dynamicfld_notnull(self,o) :
         if isinstance(o,self.fldbase) and o.version==0 and o.value is None :
@@ -2270,8 +2286,8 @@ class _Model(object) :
             self.verbase,
             active_history = True,
             lazy=self.lazy,
-            passive_deletes = "all",
-##            cascade = "all",
+            #passive_deletes = "all",
+            cascade = "all",
             uselist=False,
             primaryjoin = sqla.and_(
                 self.verbase.parent_id==self.mainbase.id, self.verbase.version == 0),
@@ -2281,8 +2297,8 @@ class _Model(object) :
         props[n] = sqla.orm.relationship(
             self.verxbase,
             lazy = "dynamic",
-            passive_deletes = "all",
-##            cascade = "all",
+            #passive_deletes = "all",
+            cascade = "all",
 ##            active_history = True,
 ##            primaryjoin = sqla.and_(
 ##                mainobj.c.id == verobj.c.parent_id, verobj.c.version != 0),
@@ -2294,8 +2310,8 @@ class _Model(object) :
             self.fldbase,
             active_history = True,
             lazy=self.lazy,
-            passive_deletes = "all",
-##            cascade = "all",
+            #passive_deletes = "all",
+            cascade = "all",
             primaryjoin = sqla.and_(
                 self.fldbase.parent_id==self.mainbase.id, self.fldbase.version == 0),
             #order_by = self.fldbase.name,
@@ -2305,8 +2321,8 @@ class _Model(object) :
         props[n] = sqla.orm.relationship(
             self.fldbase,
             lazy="dynamic",
-            passive_deletes = "all",
-##            cascade = "all",
+            #passive_deletes = "all",
+            cascade = "all",
 ##            active_history = True,
 ##            primaryjoin = sqla.and_(
 ##                mainobj.c.id == fldobj.c.parent_id, fldobj.c.version != 0),
@@ -2330,7 +2346,8 @@ class _Model(object) :
                 self.childbase,
                 active_history = False,
                 lazy='dynamic',
-                passive_deletes = "all",
+                #passive_deletes = "all",
+                cascade = "all",
                 )
 
             for name in getattr(self,'_childflds_'):
@@ -2338,7 +2355,8 @@ class _Model(object) :
                 props[n] = sqla.orm.relationship(self.childbase,
                     active_history = False,
                     #lazy=self.lazy,
-                    passive_deletes = "all",
+                    #passive_deletes = "all",
+                    cascade = "all",
                     primaryjoin = sqla.and_(
                         self.childbase.parent_id==self.mainbase.id,
                         self.childbase.parent_entity == name),
@@ -2522,6 +2540,23 @@ class _Model(object) :
     def engine(self, e) :
         self.metadata.bind = e
         self.Session.configure(bind = e)
+
+    @property
+    def inspector(self) :
+        if not hasattr(self,'_inspector') :
+            self._inspector = reflection.Inspector.from_engine(self.engine)
+        return self._inspector
+
+    @property
+    def uniquecolumns(self) :
+        c = []
+        for k in self.inspector.get_indexes(self.mainbase.__tablename__) :
+            if k.get('unique') :
+                for n in k['column_names'] :
+                    if isinstance(self.mainbase.__table__.c[n].type,sqla.String) :
+                        c.append(n)
+                        break
+        return c
 
     def create_all (self, tables = None, checkfirst = True) :
         self.metadata.create_all (tables=tables, checkfirst=checkfirst)
@@ -2871,17 +2906,17 @@ if __name__ == "__main__":
             sqla.Float: 2
             }
 
-    model = TestModel(user="sathit",debug=False,echo=True)
-    mainbase = model.mainbase
+##def flt():
+##    model = TestModel(user="sathit",debug=True,echo=True)
+##    mainbase = model.mainbase
+##
+##    flt = Filter('ส')
+##    print flt.match('สาธิต')
+##    #print dir(mainbase._selcol('buydate'))
+##    #print mainbase.buydate > '1/1/2012'
+##    print flt.query(mainbase._selcol('buydate'))
 
-    flt = Filter('ส')
-    print flt.match('สาธิต')
-    #print dir(mainbase._selcol('buydate'))
-    #print mainbase.buydate > '1/1/2012'
-    print flt.query(mainbase._selcol('buydate'))
-
-def zzz():
-    model = TestModel(user="sathit",debug=False,echo=True)
+    model = TestModel(debug=True,echo=True)
     model.create_all()
     session = model.session
 
@@ -2922,7 +2957,6 @@ def zzz():
 ##    print type(mainbase.addresses),isinstance(mainbase.addresses,sqla.orm.attributes.QueryableAttribute)
 ##    print type(mainbase.detail),isinstance(mainbase.detail,sqla.orm.attributes.QueryableAttribute)
 
-def yyy():
     model.create_all()
 
     m = model.mainbase(
@@ -2938,16 +2972,33 @@ def yyy():
 
     # special field not listed in _dynamicflds_
     m.dfields.test_field = "test_value"
-    m.addresses.append(childbase('addresses',road='Ladprao',city='Bangkok'))
-    m.addresses.append(childbase('addresses',road='Praram3',city='Samutsakorn'))
+    #m.addresses.append(childbase('addresses',road='Ladprao',city='Bangkok'))
+    #m.addresses.append(childbase('addresses',road='Praram3',city='Samutsakorn'))
 ##    m.addresses += [{'road':'Ladprao','city':'Bangkok'}]
 ##    m.addresses += [{'road':'Ladprao','city':'Bangkok'}]
 ##    print m.addresses
 
     # add data to database
     session.add(m)
+
+##    m = model.mainbase(
+##            code="JW54-0124",
+##            category="test category",
+##            title="test title message",
+##            )
+##    session.add(m)
+
     session.commit()
 
+    qry = session.query(mainbase,) \
+        .order_by(mainbase.title)
+
+    for r in qry.all() :
+        print r
+        session.delete(r)
+    session.commit()
+
+def yyy():
     qry = session.query(mainbase,) \
         .order_by(mainbase.title)
 
@@ -3081,4 +3132,6 @@ def xxx():
 ##    srch = Filter("(sathit or anan)")
 ##    print srch.items,srch
 ##    print srch.qsearch(mainbase.title,mainbase.owner,mainbase.serial)
+
+
 

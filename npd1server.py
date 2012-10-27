@@ -369,7 +369,7 @@ def ajax_autocomplete (suburl,field) :
                     ret[0:0] = _ret
                 else :
                     t = args.get('term')
-                    _ret = [x for x in ret if x.startswith(t)]
+                    _ret = [x for x in ret if isinstance(x,basestring) and x.startswith(t)]
                     if _ret :
                         ret = _ret
     if ret :
@@ -635,6 +635,8 @@ def mainpage (suburl,subpage=None) :
             pg = subpage
             #return subpage
             if subpage.endswith('/') : pg += 'index'
+            if subpage.startswith('subpage/') :
+                pg = _cfg['server'].get('default_subpage') or pg
             return bottle.template(pg,template_lookup=template_lookup,_vars=args)
         except bottle.TemplateError as e :
             if subpage.startswith('subpage/'): raise e

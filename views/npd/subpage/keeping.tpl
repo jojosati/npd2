@@ -147,7 +147,9 @@ function taking() {
 			type:mtype, url:url, data:postdata
 			,success: function(data){
 				if (data[0]==false){
-					destgrid.alertDialog(data[1],{title:destgrid._('Error'),dialogClass:'ui-state-error'});
+					msg = '<div class="ui-state-error">'+destgrid._html(data[1])+'</div>';
+					destgrid.alertDialog(msg,{title:destgrid._('Error')});
+					//destgrid.alertDialog(data[1],{title:destgrid._('Error'),dialogClass:'ui-state-error'});
 				} else {
 					$src().trigger("reloadGrid");
 					destgrid.alertDialog(destgrid._('Success')

@@ -8,13 +8,12 @@
 <div id='grid-tabs-container'></div>
 <script type="text/javascript">
 var pages=[
-	'/{{suburl}}/~subpage/grid/=_able-gqv{{!urlpagetag}}|{{_m("grid//th:ตารางข้อมูล")}}'
-	,'/{{suburl}}/~subpage/newstk/=_able-gqv{{!urlpagetag}}|{{_m("new items//th:สินค้าล่าสุด")}}'
-	,'/{{suburl}}/~subpage/oldstk/=_able-gqv{{!urlpagetag}}|{{_m("old items//th:สินค้าเดิม")}}'
-	,'/{{suburl}}/~subpage/sellable/=_able-gqv{{!urlpagetag}}|{{_m("sellable//th:พร้อมขาย")}}'
-	,'/{{suburl}}/~subpage/taken/=_able-gqv{{!urlpagetag}}|{{_m("taken//th:ถูกยืม")}}'
-	,'/{{suburl}}/~subpage/sold/=_able-gqv{{!urlpagetag}}|{{_m("sold//th:ขายไปแล้ว")}}'
-	,'/{{suburl}}/~subpage/taker_report|{{_m("taker_report//th:ประวัติยืม")}}'
+	'/{{suburl}}/~subpage/grid/=_able-gqszv{{!urlpagetag}}|{{_m("grid//th:ตารางข้อมูล")}}'
+	,'/{{suburl}}/~subpage/newstk/=_able-gqszv{{!urlpagetag}}|{{_m("new items//th:สินค้าล่าสุด")}}'
+	,'/{{suburl}}/~subpage/oldstk/=_able-gqszv{{!urlpagetag}}|{{_m("old items//th:สินค้าเดิม")}}'
+	,'/{{suburl}}/~subpage/sellable/=_able-gqszv{{!urlpagetag}}|{{_m("sellable//th:พร้อมขาย")}}'
+	,'/{{suburl}}/~subpage/taken/=_able-gqszv{{!urlpagetag}}|{{_m("taken//th:ถูกยืม")}}'
+	,'/{{suburl}}/~subpage/sold/=_able-gqszv{{!urlpagetag}}|{{_m("sold//th:ขายไปแล้ว")}}'
 
 	];
 $(document).ready(function() {

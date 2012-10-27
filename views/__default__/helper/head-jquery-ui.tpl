@@ -2,11 +2,11 @@
 %include helper/language _vars=_vars
 %suburl = _vars['suburl']
 %language = _vars['language']
-%theme = _vars.get('kwoptions',{}).get('theme') or _vars.get('_server_',{}).get('theme') or 'ui-lightness' 
+%#theme = _vars.get('kwoptions',{}).get('theme') or _vars.get('_server_',{}).get('theme') or 'ui-lightness' 
 %scrollpane = False
 %touchscroll = True
 %touchpunch = True
-<link type="text/css" href="/{{suburl}}/resource/themes/{{theme}}/jquery-ui.css" rel="Stylesheet">
+%#<link type="text/css" href="/{{suburl}}/resource/themes/{{theme}}/jquery-ui.css" rel="Stylesheet">
 %if scrollpane :
 <link type="text/css" href="/{{suburl}}/resource/css/jquery.jscrollpane.css" rel="stylesheet" media="all" />
 %end
@@ -29,6 +29,7 @@ $.datepicker.setDefaults({dateFormat:'dd/mm/yy'});
 <script type="text/javascript" src="/{{suburl}}/resource/js/jquery.jscrollpane.min.js"></script>
 %end
 <script type="text/javascript" src="/{{suburl}}/resource/js/jquery.ui.datepicker.strftime.js"></script>
+<script type="text/javascript" src="/{{suburl}}/resource/js/jquery.beforeunload.js"></script>
 <style type="text/css">
 .ui-button-text-only .ui-button-text {padding: 0.1em 0.5em 0.1em 0.5em; line-height:90%;}
 </style>

@@ -1,6 +1,5 @@
-﻿
-%if not _vars.get('layout_loaded'): globals()['_rebase']=('helper/layout-dynamic',{'_vars':_vars})
 
+%if not _vars.get('layout_loaded'): globals()['_rebase']=('helper/layout-dynamic',{'_vars':_vars})
 %include helper/language _vars=_vars
 %include helper/user-login _vars=_vars
 %include helper/gridwrapper-options _vars=_vars

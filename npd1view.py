@@ -10,7 +10,7 @@
 # Licence:     MIT
 #-------------------------------------------------------------------------------
 #!/usr/bin/env python
-import os, hashlib, datetime, fnmatch, glob, re
+import os, hashlib, datetime, fnmatch, glob, re, time
 
 from npd2model import Npd2, next_runno, attr_name_dimension, split_urlsegs
 from dyndmod import sqla, _utf8, _unicode, json_loads, Filter
@@ -24,7 +24,7 @@ import aliases_default
 import regex_default
 import summaries_default
 
-__version__ = '1.9.0'
+__version__ = '1.9.3'
 _restrict_cfg =  {
     'server' : {
         'version': __version__,
@@ -693,7 +693,7 @@ class Npd1View (object) :
 
             # 2. term
             if term and isinstance(term,basestring) and '*' not in term :
-                term = _utf8(term)
+                #term = _utf8(term)
                 isnum = '([0-9]{'+str(self.modeler._options_.get('maxonomy_suppressnumsize',2))+',})'
                 #re_isnum = re.compile(isnum)
                 nterm = re.sub(isnum,'*',term)
@@ -768,7 +768,7 @@ class Npd1View (object) :
                 #xrunpre = rsegs[0] + rsegs[1]
                 #if xrunpre not in nret :
                 #    nret.append(xrunpre)
-                xrunpre = (rsegs[0] + newrunpre)
+                xrunpre = _unicode(rsegs[0] + newrunpre)
                 if xrunpre not in nret :
                     nret.append(xrunpre)
 
@@ -781,12 +781,12 @@ class Npd1View (object) :
 ##                    if nrunno and nrunno not in nret :
 ##                        print 'nrunpre',nrunpre,nrunno,rsegs[0],newrunpre
 ##                        nret.append(nrunno)
-
             segs = re.split('([0-9]+)',term)
             if len(segs)==1 :
                 tpf = term + newrunpre
             else :
                 tpf = ''.join(segs[:3])
+            tpf = _unicode(tpf)
             if tpf not in nret :
                 nret.append(tpf)
 
@@ -801,6 +801,7 @@ class Npd1View (object) :
                 if limit<0 :
                     ord = ord.desc()
                 expr.order_by(ord)
+
                 for x in session.execute(expr) :
                     x = x[0]
                     if not x :
@@ -1335,7 +1336,9 @@ class Npd1View (object) :
         oval = getattr(rec,nn) if not dim else rec.dfields(nn,*dim)
 ##        if k=='provider_cost' :
 ##            print '2 oval',oval
-        val = _unicode(val.rstrip()) or None
+
+        #val = _unicode(val.rstrip()) or None
+        val = val.rstrip()
 
         t = self.npd2._fld_dbtype(nn,*dim,storable=True)
         if t is None :
@@ -1364,6 +1367,11 @@ class Npd1View (object) :
 
         val = _cnv(val)
         oval = _cnv(oval)
+        if isinstance(val,basestring) :
+            val = _unicode(val)
+        if isinstance(val,basestring) :
+            oval = _unicode(oval)
+
         if oval != val :
             if permcode and not self.colPermission (k,user_role,permcode) :
                 raise Exception('permission denied for '+k)
@@ -1472,7 +1480,7 @@ class Npd1View (object) :
             if item['id'].startswith('dnd_') \
                 or item['id'].startswith('clk_') :
                 try :
-                    brec = session.query(mainbase).filter(mainbase.code==ncode).one()
+                    brec = session.query(mainbase).filter(mainbase.code==_unicode(ncode)).one()
                     bval = npd1fld(brec,'buyer') or ''
                     if '(#' in bval :
                         return _fail("{0}, already transfer as {1}".format(ncode,_utf8(bval)))
@@ -1480,7 +1488,7 @@ class Npd1View (object) :
 
             if fixcode or re.search(re_maxonomy,ncode) :
                 try :
-                    session.query(mainbase).filter(mainbase.code==fixcode or ncode).one()
+                    session.query(mainbase).filter(mainbase.code==_unicode(fixcode or ncode)).one()
                     if fixcode :
                         return _fail("{0}, code already existed.".format(fixcode))
                 except :
@@ -1531,7 +1539,7 @@ class Npd1View (object) :
             try :
                 _addrec(ncode,item,bcode)
             except Exception as e :
-                return _fail("{0}, {1}".format(ncode,e))
+                return _fail("{0}, {1}".format(_utf8(ncode),e))
             i = ncodes.index(None)
             if i>=0 :
                 ncodes[i] = ncode
@@ -1555,7 +1563,7 @@ class Npd1View (object) :
         for item in items :
             try:
                 #lu = item.get('last_updated')
-                rec = session.query(mainbase).filter(mainbase.code==item['code']).one()
+                rec = session.query(mainbase).filter(mainbase.code==_unicode(item['code'])).one()
                 self.concurrent_ctrl(rec,last_updated=item.get('last_updated'),**kwargs)
             except Exception as e :
                 return [False,"{0}, {1}".format(item['code'],e),'']
@@ -1575,7 +1583,7 @@ class Npd1View (object) :
                     session.add(rec)
                 except Exception as e  : #sqla.exc.SQLAlchemyError,exc :
                     session.rollback()
-                    return [False,"{0} {1} {2}".format(rec.code,e),id]
+                    return [False,"{0} {1} {2}".format(_utf8(rec.code),e),id]
                 recs.append(rec.code)
         codes = recs
         if recs :
@@ -1583,8 +1591,8 @@ class Npd1View (object) :
                 session.commit()
             except Exception as e :
                 session.rollback()
-                return [False,"{0} {1} {2}".format(cmd,','.join(codes),e),'']
-        return [True,cmd,','.join(codes)]
+                return [False,"{0} {1} {2}".format(cmd,_utf8(','.join(codes)),e),'']
+        return [True,cmd,_utf8(','.join(codes))]
 
     def jqgrid_edit_base (self,**kwargs) :
         '''
@@ -1620,10 +1628,10 @@ class Npd1View (object) :
             try :
                 rec = session.query(mainbase).filter(mainbase.id==id).one()
                 self.concurrent_ctrl(rec,**kwargs)
-                idmsg += " '{0}'".format(rec.code)
+                idmsg += " '{0}'".format(_utf8(rec.code))
                 #vcrec = self.version_ctrl(rec,**kwargs)
             except Exception as e :
-                return [False,"{0} {1}".format(idmsg,e),id]
+                return [False,"{0} {1} {2}".format(idmsg,e,'-reading old data'),id]
 
         if cmd=="del" :
             if not self.colPermission ('__table__',user_role,'d') :
@@ -1649,7 +1657,7 @@ class Npd1View (object) :
                     if self.update_field(rec,k,kwargs[k],user_role,permcode):
                         chflag = True
                         if k=='code':
-                            idmsg += " ('{0}')".format(rec.code)
+                            idmsg += " ('{0}')".format(_utf8(rec.code))
                 except Exception as e :
                     return [False,"{0} (field='{1}') {2}".format(idmsg,k,e),id]
             if chflag :
@@ -1666,7 +1674,16 @@ class Npd1View (object) :
     def jqgrid_edit (self,**kwargs) :
         #wrapper = getattr(self.modeler._wrapper_,'jqgrid_edit',None)
         #if wrapper : return wrapper(self,**kwargs)
-        return self.jqgrid_edit_base(**kwargs)
+        ret = self.jqgrid_edit_base(**kwargs)
+        retries = [0.2,0.5,0.2,1.0,0.2,1.0,0.2,1.0]
+
+        while not ret[0] and 'database is locked' in ret[1].lower() :
+            if not retries :
+                break
+            time.sleep(retries.pop(0))
+            ret = self.jqgrid_edit_base(**kwargs)
+
+        return ret
 
     def expand_subpage_alias (self,subpage,_recur=[]) :
         alias = self.getcfg('aliases','subpage_alias',{})

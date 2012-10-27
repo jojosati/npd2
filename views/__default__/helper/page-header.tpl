@@ -12,7 +12,7 @@
 %[locals().update({k:_vars[k]}) for k in _require_vars]
 %_option_vars=[]
 %[locals().update({k:_vars.get(k)}) for k in _option_vars]
-%#--------------------------------------------------------
+%
 <div id="pageheader" style="padding-bottom:0.5em;">
 <div id="pageheadcaption" class="ui-widget ui-widget-header ui-corner-top">
 <span style="font-size:180%;letter-spacing:0.2em;margin-left:0.1em;">
@@ -24,6 +24,7 @@
 <div id="pageheadnav" class="ui-widget ui-widget-content ui-corner-bottom">
 <table style="width:100%;"><tr>
 <td>
+%
 %_url = '/'+suburl
 /<a href="{{!_url}}">{{suburl}}</a>
 %if urlsubpage :

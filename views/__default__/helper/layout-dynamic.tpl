@@ -2,7 +2,7 @@
 <html>
 <head>
 {{_vars.get('prepend_htmlhead','')}}
-
+%
 %include helper/head-jquery-ui _vars=_vars
 %if 'title_htmlhead' in _vars :
 <title>{{_vars['title_htmlhead']}}</title>
@@ -13,7 +13,6 @@
 </head>
 <body>
 <script type="text/javascript">
-
 $(document).ready(function() {
 	var $frame = $('.frame-dynamic').first() ;
 	if (!$frame.css('margin')) {
@@ -25,7 +24,6 @@ $(document).ready(function() {
 %include
 </td></tr></table>
 </body>
-
 </html>
 %if not _vars.get('layout_loaded'): _vars['layout_loaded']='dynamic'
 
