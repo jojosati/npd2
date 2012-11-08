@@ -3,9 +3,12 @@ by sathit jittanupat
 
 server :
 python 2.7
-sqlalchemy / sqlite
-bottle
+
+package :
+sqlalchemy / sqlite,
+bottle / twisted
+
 
 client :
-jquery / jquery ui
+jquery / jquery ui,
 jqgrid
